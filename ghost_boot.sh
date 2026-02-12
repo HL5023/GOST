@@ -12,11 +12,15 @@ if [ ! -f "cloudflared" ]; then
   chmod +x cloudflared
 fi
 
-nohup ./gost -L http://:8080 > /dev/null 2>&1 &
-nohup ./cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
+nohup ./gost -L http://:8080 > gost.log 2>&1 &
+GOST_PID=$!
+echo "GOST PID: $GOST_PID started on http://localhost:8080"
+sleep 2
 
-sleep 8
-TUNNEL_URL=$(grep -o 'https://.*\.trycloudflare.com' tunnel.log | head -n 1)
+nohup ./cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
+sleep 10
+
+TUNNEL_URL=$(grep -o 'https://[^[:space:]]*\.trycloudflare\.com' tunnel.log | head -n 1)
 
 if [ ! -z "$TUNNEL_URL" ]; then
   echo "[SERVER] ✅ Signal Active: $TUNNEL_URL"
@@ -26,6 +30,10 @@ if [ ! -z "$TUNNEL_URL" ]; then
   git add proxy_url.txt
   git commit -m "Signal Update [skip ci]" > /dev/null 2>&1
   git push > /dev/null 2>&1
+  
+  tail -20 gost.log
 else
   echo "[SERVER] ❌ Tunnel creation failed."
+  echo "Cloudflared logs:"
+  tail -30 tunnel.log
 fi
