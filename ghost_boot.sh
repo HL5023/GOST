@@ -12,12 +12,12 @@ if [ ! -f "cloudflared" ]; then
   chmod +x cloudflared
 fi
 
-nohup ./gost -L socks5://:1080 > gost.log 2>&1 &
+nohup ./gost -L http+socks5://:8080 > gost.log 2>&1 &
 GOST_PID=$!
-echo "GOST SOCKS5 started on :1080"
+echo "GOST HTTP+SOCKS5 bridge started on :8080"
 sleep 2
 
-nohup ./cloudflared tunnel --url socks5://localhost:1080 > tunnel.log 2>&1 &
+nohup ./cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
 sleep 10
 
 TUNNEL_URL=$(grep -o 'https://[^[:space:]]*\.trycloudflare\.com' tunnel.log | head -n 1)
