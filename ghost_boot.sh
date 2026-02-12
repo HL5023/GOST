@@ -12,12 +12,15 @@ if [ ! -f "cloudflared" ]; then
   chmod +x cloudflared
 fi
 
-nohup ./gost -L http://:8080 > gost.log 2>&1 &
+openssl genrsa -out /tmp/key.pem 2048 > /dev/null 2>&1
+openssl req -new -x509 -key /tmp/key.pem -out /tmp/cert.pem -days 365 -subj "/CN=localhost" > /dev/null 2>&1
+
+nohup ./gost -L tls://:8080?cert=/tmp/cert.pem&key=/tmp/key.pem -L socks5://:1080 > gost.log 2>&1 &
 GOST_PID=$!
-echo "GOST PID: $GOST_PID started on http://localhost:8080"
+echo "GOST started: TLS on 8080, SOCKS5 on 1080"
 sleep 2
 
-nohup ./cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
+nohup ./cloudflared tunnel --url https://localhost:8080 > tunnel.log 2>&1 &
 sleep 10
 
 TUNNEL_URL=$(grep -o 'https://[^[:space:]]*\.trycloudflare\.com' tunnel.log | head -n 1)
