@@ -46,7 +46,7 @@ TCONF
 
 nohup ./trojan/trojan trojan_server.json > trojan.log 2>&1 &
 echo "Trojan server started on :8443"
-sleep 2
+sleep 3
 
 nohup ./cloudflared tunnel --url https://localhost:8443 > tunnel.log 2>&1 &
 sleep 10
