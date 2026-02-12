@@ -12,9 +12,9 @@ if [ ! -f "cloudflared" ]; then
   chmod +x cloudflared
 fi
 
-nohup ./gost -L http+socks5://:8080 > gost.log 2>&1 &
+nohup ./gost -L http://:8080 > gost.log 2>&1 &
 GOST_PID=$!
-echo "GOST HTTP+SOCKS5 bridge started on :8080"
+echo "GOST HTTP started on :8080"
 sleep 2
 
 nohup ./cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
